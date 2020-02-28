@@ -49,21 +49,6 @@
         @part-selected="part => selectedRobot.bases=part"
       />
     </div>
-    <div>
-      <h1>Cart</h1>
-      <table>
-        <thead>
-          <tr>
-            <th>Robot</th>
-            <th class='cost'>Cost</th>
-          </tr>
-          <tr :key="index" v-for="(robot, index) in cart">
-             <td>{{robot.head.title}}</td>
-             <td class="cost">{{robot.cost}}</td>
-          </tr>
-        </thead>
-      </table>
-    </div>
   </div>
 </template>
 
@@ -81,12 +66,19 @@ export default {
   },
   props: [],
   mixins: [ConsoleMixin],
+  beforeRouteLeave(to, from, next) {
+    // eslint-disable-next-line no-unused-expressions
+    this.addedToCart ? next(true)
+      // eslint-disable-next-line no-restricted-globals
+      : next(confirm('You have not added to cart, Are you sure you want to leave'));
+  },
   mounted() {
 
   },
   data() {
     return {
       availableParts,
+      addedToCart: false,
       cart: [],
       selectedRobot: {
         head: {},
@@ -105,7 +97,8 @@ export default {
         + robot.rightArm.cost
         + robot.torsos.cost
         + robot.bases.cost;
-      this.cart.push({ ...robot, cost });
+      this.$store.commit('addRobotToCart', { ...robot, cost });
+      this.addedToCart = true;
     },
   },
   computed: {
@@ -223,14 +216,6 @@ export default {
   position: absolute;
   width: 210px;
   padding: 3px;
-}
-td, th {
-  text-align: left;
-  padding: 5px;
-  padding-right: 20px;
-}
-.cost {
-  text-align: right;
 }
 .sale-border {
   border: 3px solid red;
